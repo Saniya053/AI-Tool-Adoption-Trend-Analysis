@@ -1,0 +1,196 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy.stats import f_oneway
+np.random.seed(42)
+n = 500
+industries = ['IT', 'Finance', 'Healthcare', 'Education', 'Retail']
+company_sizes = ['Small', 'Medium', 'Large']
+ai_tools = ['ChatGPT', 'GitHub Copilot', 'Gemini', 'Claude', 'Midjourney']
+df = pd.DataFrame({
+    'Organization_ID': range(1, n+1),
+    'Industry': np.random.choice(industries, n),
+    'Company_Size': np.random.choice(company_sizes, n),
+    'Employee_Count': np.random.randint(20, 5000, n),
+    'AI_Tool': np.random.choice(ai_tools, n),
+    'Adoption_Year': np.random.randint(2020, 2026, n),
+    'AI_Investment': np.random.randint(5000, 500000, n),
+    'Productivity_Gain': np.random.uniform(5, 50, n),
+    'Cost_Savings': np.random.randint(1000, 700000, n),
+    'Satisfaction_Score': np.random.uniform(1, 10, n)
+})
+df['Adoption_Level'] = pd.cut(
+    df['Productivity_Gain'],
+    bins=[0, 20, 35, 100],
+    labels=['Low', 'Medium', 'High']
+)
+df.to_csv("ai_adoption.csv", index=False)
+print("Dataset Generated Successfully")
+print(df.head())
+print("\nDATA UNDERSTANDING")
+print("\nDataset Shape:")
+print(df.shape)
+print("\nDataset Info:")
+print(df.info())
+print("\nMissing Values:")
+print(df.isnull().sum())
+print("\nDuplicate Rows:")
+print(df.duplicated().sum())
+df.drop_duplicates(inplace=True)
+print("\nStatistical Summary:")
+print(df.describe())
+print("\nNumber of Organizations:")
+print(df['Organization_ID'].nunique())
+print("\nMost Common AI Tools:")
+print(df['AI_Tool'].value_counts())
+print("\nIndustry Distribution:")
+print(df['Industry'].value_counts())
+print("\nDESCRIPTIVE STATISTICS")
+print("\nMean Productivity Gain:")
+print(df['Productivity_Gain'].mean())
+print("\nMedian Productivity Gain:")
+print(df['Productivity_Gain'].median())
+print("\nStandard Deviation:")
+print(df['Productivity_Gain'].std())
+print("\nQuartiles:")
+print(df['Productivity_Gain'].quantile([0.25, 0.5, 0.75]))
+print("\nPercentiles:")
+print(df['Productivity_Gain'].quantile([0.10, 0.90]))
+print("\nAverage AI Usage by Industry:")
+print(df.groupby('Industry')['Productivity_Gain'].mean())
+print("\nCompany Size Distribution:")
+print(df['Company_Size'].value_counts())
+print("\nTREND ANALYSIS")
+plt.figure(figsize=(8,5))
+sns.countplot(x='Industry', data=df)
+plt.title('AI Adoption by Industry')
+plt.xticks(rotation=30)
+plt.show()
+plt.figure(figsize=(8,5))
+sns.countplot(
+    x='Company_Size',
+    hue='Adoption_Level',
+    data=df
+)
+plt.title('Company Size vs Adoption Level')
+plt.show()
+plt.figure(figsize=(8,5))
+sns.barplot(
+    x='AI_Tool',
+    y='Satisfaction_Score',
+    data=df
+)
+plt.title('AI Tool vs Satisfaction')
+plt.xticks(rotation=20)
+plt.show()
+yearly_growth = df.groupby('Adoption_Year').size()
+plt.figure(figsize=(8,5))
+plt.plot(yearly_growth.index,
+         yearly_growth.values,
+         marker='o')
+plt.title('AI Adoption Growth Trend')
+plt.xlabel('Year')
+plt.ylabel('Organizations')
+plt.grid(True)
+plt.show()
+plt.figure(figsize=(8,5))
+sns.scatterplot(
+    x='Employee_Count',
+    y='Productivity_Gain',
+    data=df
+)
+plt.title('Employee Count vs Productivity Gain')
+plt.show()
+print("\nCORRELATION ANALYSIS")
+corr_data = df[
+    ['Employee_Count',
+     'AI_Investment',
+     'Productivity_Gain',
+     'Cost_Savings',
+     'Satisfaction_Score']
+]
+correlation_matrix = corr_data.corr()
+print(correlation_matrix)
+plt.figure(figsize=(8,6))
+sns.heatmap(
+    correlation_matrix,
+    annot=True,
+    cmap='coolwarm'
+)
+plt.title("Correlation Heatmap")
+plt.show()
+print("\nAdoption vs Productivity:")
+print(correlation_matrix['Productivity_Gain'])
+print("\n HYPOTHESIS TESTING")
+small = df[df['Company_Size'] == 'Small']['Productivity_Gain']
+medium = df[df['Company_Size'] == 'Medium']['Productivity_Gain']
+large = df[df['Company_Size'] == 'Large']['Productivity_Gain']
+f_stat, p_value = f_oneway(
+    small,
+    medium,
+    large
+)
+print("F Statistic =", f_stat)
+print("P Value =", p_value)
+alpha = 0.05
+if p_value < alpha:
+    print("\nReject Null Hypothesis")
+    print("Company Size significantly impacts AI adoption/productivity.")
+else:
+    print("\nFail to Reject Null Hypothesis")
+    print("No significant impact of company size.")
+print("\n ORGANIZATION SEGMENTATION")
+ai_leaders = df[
+    (df['Adoption_Level'] == 'High') &
+    (df['Satisfaction_Score'] >= 8)
+]
+early_adopters = df[
+    df['Adoption_Year'] <= 2022
+]
+slow_adopters = df[
+    df['Adoption_Level'] == 'Low'
+]
+high_roi = df[
+    df['Cost_Savings'] > df['AI_Investment']
+]
+print("AI Leaders:", len(ai_leaders))
+print("Early Adopters:", len(early_adopters))
+print("Slow Adopters:", len(slow_adopters))
+print("High ROI Organizations:", len(high_roi))
+print("\nBUSINESS INSIGHTS")
+top_tool = df['AI_Tool'].value_counts().idxmax()
+top_industry = df['Industry'].value_counts().idxmax()
+print("\nMost Popular AI Tool:", top_tool)
+print("Leading Industry:", top_industry)
+print("\nAverage Satisfaction by Tool:")
+print(
+    df.groupby('AI_Tool')['Satisfaction_Score']
+    .mean()
+    .sort_values(ascending=False)
+)
+print("\nAverage Productivity by Industry:")
+print(
+    df.groupby('Industry')['Productivity_Gain']
+    .mean()
+    .sort_values(ascending=False)
+)
+print("\nRecommendations:")
+print("1. Increase AI investment in high ROI segments.")
+print("2. Focus on employee AI training.")
+print("3. Promote highly rated AI tools.")
+print("4. Encourage adoption in low-performing industries.")
+print("5. Monitor satisfaction to improve productivity.")
+industry_summary = (
+    df.groupby('Industry')
+    .agg({
+        'Productivity_Gain':'mean',
+        'Satisfaction_Score':'mean',
+        'AI_Investment':'mean'
+    })
+)
+industry_summary.to_csv(
+    "industry_summary.csv"
+)
+
+print("\nAnalysis Completed Successfully.")
